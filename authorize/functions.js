@@ -1,9 +1,14 @@
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 
+function tokenIsNull(token) {
+  if (token === '') return true;
+  return token == null;
+}
+
 function authorizeUser(request, response, next) {
   console.log('auth user hit');
-  if (request.body.token == null) {
+  if (tokenIsNull(request.body.token)) {
     console.log('token is undefined');
     return response.status(401).send();
   }
@@ -46,4 +51,4 @@ function authorizeUser(request, response, next) {
   }
 }
 
-module.exports = authorizeUser;
+module.exports = { authorizeUser, tokenIsNull };

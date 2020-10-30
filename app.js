@@ -3,7 +3,7 @@ const express = require('express');
 const sql = require('mysql2/promise');
 const cors = require('cors');
 const PORT = 4000;
-const authorizeUser = require('./authorize/functions');
+const { authorizeUser } = require('./authorize/functions');
 const aws = require('aws-sdk');
 const serverless = require('serverless-http');
 
@@ -125,7 +125,7 @@ app.post('/get-all-comps', authorizeUser, async (req, resp) => {
     const username = req.decodedToken['cognito:username'];
     const conn = await pool.getConnection();
     const response = await conn.execute(
-      'SELECT * FROM componentsDb.components',
+      'SELECT * FROM componentsDb.components ORDER BY componentId DESC',
     );
 
     conn.release();
@@ -159,7 +159,7 @@ app.post('/get-user-comps', authorizeUser, async (req, resp) => {
     const username = req.decodedToken['cognito:username'];
     const conn = await pool.getConnection();
     const response = await conn.execute(
-      'SELECT * FROM componentsDb.components WHERE creator=?',
+      'SELECT * FROM componentsDb.components WHERE creator=? ORDER BY componentId DESC',
       [username],
     );
 
@@ -563,7 +563,7 @@ app.post('/get-components-by-tags', authorizeUser, async (req, resp) => {
     const conn = await pool.getConnection();
     await conn.query('USE componentsDb');
     const response = await conn.execute(
-      `SELECT * FROM components JOIN (SELECT component FROM tags WHERE attribute LIKE ?) AS newTags ON components.componentId = newTags.component`,
+      `SELECT * FROM components JOIN (SELECT component FROM tags WHERE attribute LIKE ?) AS newTags ON components.componentId = newTags.component ORDER BY componentId DESC`,
       ['%' + attribute + '%'],
     );
     console.log(response[0]);
